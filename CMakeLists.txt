@@ -4,5 +4,5 @@ project("Hungarian Algorithm")
 set(CMAKE_CXX_STANDARD 11)
 add_library(hungarian hungarian.cpp hungarian.h)
 
-add_executable(test test.c)
-target_link_libraries(test hungarian)
+add_executable(testdev test.c)
+target_link_libraries(testdev hungarian)

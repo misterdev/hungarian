@@ -32,10 +32,9 @@
 #include <iostream>
 #include <limits>
 
-const bool verbose = false;
-
-// TODO previously in hpp
 using Matrix = std::vector<std::vector<int>>;
+
+const bool verbose = false;
 
 struct Result {
   // True if the algorithm completed and found a solution.
@@ -48,50 +47,56 @@ struct Result {
   int totalCost = 0;
 };
 
-// Matrix normalizeInput(const Matrix &input, MODE mode) {
-//   const int org_rows = input.size(), org_cols = input[0].size();
 
-//   // is the number of cols not equal to number of rows?
-//   // if yes, expand with 0-cols / 0-cols
-//   const int mrank = std::max(org_rows, org_cols);
+Matrix normalizeInput(int **input, MODE mode, int N, int M) {
+  const int org_rows = N, org_cols = M;
 
-//   Matrix output;
-//   output.resize(mrank, std::vector<int>(mrank, 0));
+  // is the number of cols not equal to number of rows?
+  // if yes, expand with 0-cols / 0-cols
+  const int mrank = std::max(org_rows, org_cols);
 
-//   int max_cost = 0;
-//   for (int i = 0; i < org_rows; i++) {
-//     for (int j = 0; j < org_cols; j++) {
-//       output[i][j] = input[i][j];
-//       max_cost = std::max(max_cost, output[i][j]);
-//     }
-//   }
-
-//   if (mode == MODE_MAXIMIZE_UTIL) {
-//     for (int i = 0; i < org_rows; i++) {
-//       for (int j = 0; j < org_cols; j++) {
-//         output[i][j] = max_cost - output[i][j];
-//       }
-//     }
-//   }
-
-//   return output;
-// }
-
-
-Matrix normalizeInput(const int **input, MODE mode) {
   Matrix output;
-  const int mrank = 20; 
   output.resize(mrank, std::vector<int>(mrank, 0));
+
+  int max_cost = 0;
+  for (int i = 0; i < org_rows; i++) {
+    for (int j = 0; j < org_cols; j++) {
+      output[i][j] = input[i][j];
+      max_cost = std::max(max_cost, output[i][j]);
+    }
+  }
+
+  if (mode == MODE_MAXIMIZE_UTIL) {
+    for (int i = 0; i < org_rows; i++) {
+      for (int j = 0; j < org_cols; j++) {
+        output[i][j] = max_cost - output[i][j];
+      }
+    }
+  }
+
   return output;
 }
 
-void solve(const int **input, int *tracks, int *dets, int N, int M) {
+void PrintMatrix(const Matrix &m) {
+  const int rows = m.size(), cols = m[0].size();
+  fprintf(stderr, "\n");
+  for (int i = 0; i < rows; i++) {
+    fprintf(stderr, " [");
+    for (int j = 0; j < cols; j++) {
+      fprintf(stderr, "%5d ", m[i][j]);
+    }
+    fprintf(stderr, "]\n");
+  }
+  fprintf(stderr, "\n");
+}
+
+void solve(int **input, int *tracks, int *dets, int rows, int cols) {
   // TODO previously a parameter
   MODE mode = MODE_MINIMIZE_COST;
 
   Result result;
   result.success = true;
-  result.cost = normalizeInput(input, mode);
+  result.cost = normalizeInput(input, mode, rows, cols);
 
   const int INF = std::numeric_limits<int>::max();
 
@@ -314,11 +319,10 @@ done:
 
   result.totalCost = cost;
 
-  // PrintMatrix() TODO
+  PrintMatrix(result.assignment);
 }
 
-void PrintMatrix(const Matrix &m) {
-  const int rows = m.size(), cols = m[0].size();
+void printMatrix(int **m, int rows, int cols) {
   fprintf(stderr, "\n");
   for (int i = 0; i < rows; i++) {
     fprintf(stderr, " [");

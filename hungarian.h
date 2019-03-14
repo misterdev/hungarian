@@ -24,7 +24,8 @@ typedef enum {
 extern "C" {
 #endif
 
-void solve(int **costMatrix, int *tracks, int *dets, int N, int M);
+void solve(int **input, int *tracks, int *dets, int rows, int cols); // TODO rename NxM
+void printMatrix(int **m, int rows, int cols);
 
 #ifdef __cplusplus
 }
