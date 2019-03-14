@@ -11,5 +11,5 @@ set(CMAKE_CXX_STANDARD 11)
 
 add_library(hungarian hungarian.cpp hungarian.h)
 
-add_executable(test_cases test.c)
-target_link_libraries(test_cases hungarian)
+add_executable(test test.c)
+target_link_libraries(test hungarian)
