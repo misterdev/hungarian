@@ -25,51 +25,70 @@
  ********************************************************************
  ********************************************************************/
 
-#include "hungarian.hpp"
+#include "hungarian.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <iostream>
 #include <limits>
 
-namespace Hungarian {
-
-namespace {
-
 const bool verbose = false;
 
-Matrix normalizeInput(const Matrix &input, MODE mode) {
-  const int org_rows = input.size(), org_cols = input[0].size();
+// TODO previously in hpp
+using Matrix = std::vector<std::vector<int>>;
 
-  // is the number of cols not equal to number of rows?
-  // if yes, expand with 0-cols / 0-cols
-  const int mrank = std::max(org_rows, org_cols);
+struct Result {
+  // True if the algorithm completed and found a solution.
+  bool success = false;
+  // The solution
+  Matrix assignment;
+  // A normalized form of the input cost matrix.
+  Matrix cost;
+  // The costs incurred by the assignment
+  int totalCost = 0;
+};
 
+// Matrix normalizeInput(const Matrix &input, MODE mode) {
+//   const int org_rows = input.size(), org_cols = input[0].size();
+
+//   // is the number of cols not equal to number of rows?
+//   // if yes, expand with 0-cols / 0-cols
+//   const int mrank = std::max(org_rows, org_cols);
+
+//   Matrix output;
+//   output.resize(mrank, std::vector<int>(mrank, 0));
+
+//   int max_cost = 0;
+//   for (int i = 0; i < org_rows; i++) {
+//     for (int j = 0; j < org_cols; j++) {
+//       output[i][j] = input[i][j];
+//       max_cost = std::max(max_cost, output[i][j]);
+//     }
+//   }
+
+//   if (mode == MODE_MAXIMIZE_UTIL) {
+//     for (int i = 0; i < org_rows; i++) {
+//       for (int j = 0; j < org_cols; j++) {
+//         output[i][j] = max_cost - output[i][j];
+//       }
+//     }
+//   }
+
+//   return output;
+// }
+
+
+Matrix normalizeInput(const int **input, MODE mode) {
   Matrix output;
+  const int mrank = 20; 
   output.resize(mrank, std::vector<int>(mrank, 0));
-
-  int max_cost = 0;
-  for (int i = 0; i < org_rows; i++) {
-    for (int j = 0; j < org_cols; j++) {
-      output[i][j] = input[i][j];
-      max_cost = std::max(max_cost, output[i][j]);
-    }
-  }
-
-  if (mode == MODE_MAXIMIZE_UTIL) {
-    for (int i = 0; i < org_rows; i++) {
-      for (int j = 0; j < org_cols; j++) {
-        output[i][j] = max_cost - output[i][j];
-      }
-    }
-  }
-
   return output;
 }
 
-}  // namespace
+void solve(const int **input, int *tracks, int *dets, int N, int M) {
+  // TODO previously a parameter
+  MODE mode = MODE_MINIMIZE_COST;
 
-Result Solve(const Matrix &input, MODE mode) {
   Result result;
   result.success = true;
   result.cost = normalizeInput(input, mode);
@@ -257,12 +276,12 @@ done:
   // Begin doublecheck the solution 23
   for (k = 0; k < mrank; k++) {
     for (l = 0; l < mrank; l++) {
-      if (result.cost[k][l] < row_dec[k] - col_inc[l]) return {};
+      if (result.cost[k][l] < row_dec[k] - col_inc[l]) return;
     }
   }
   for (k = 0; k < mrank; k++) {
     l = col_mate[k];
-    if (l < 0 || result.cost[k][l] != row_dec[k] - col_inc[l]) return {};
+    if (l < 0 || result.cost[k][l] != row_dec[k] - col_inc[l]) return;
   }
   k = 0;
   for (l = 0; l < mrank; l++) {
@@ -270,7 +289,7 @@ done:
       k++;
     }
   }
-  if (k > mrank) return {};
+  if (k > mrank) return;
   // End doublecheck the solution 23
   // End Hungarian algorithm 18
 
@@ -294,7 +313,8 @@ done:
   if (verbose) fprintf(stderr, "Cost is %d\n", cost);
 
   result.totalCost = cost;
-  return result;
+
+  // PrintMatrix() TODO
 }
 
 void PrintMatrix(const Matrix &m) {
@@ -309,5 +329,3 @@ void PrintMatrix(const Matrix &m) {
   }
   fprintf(stderr, "\n");
 }
-
-}  // namespace Hungarian
